@@ -1,0 +1,68 @@
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Yonetim</p>
+    <h1>Admin paneli</h1>
+    <p class="muted-text">Uyeleri goruntule, rollerini degistir.</p>
+  </div>
+  <a routerLink="/" class="ghost-btn">Ana sayfa</a>
+</section>
+
+<section class="state-panel loading" *ngIf="loading">
+  <div class="spinner" aria-hidden="true"></div>
+  <p>Uyeler yukleniyor...</p>
+</section>
+
+<section class="state-panel error" *ngIf="!loading && error">
+  <div>
+    <h3>Liste alinamadi</h3>
+    <p>{{ error }}</p>
+  </div>
+  <button class="ghost-btn" (click)="loadUsers()">Tekrar dene</button>
+</section>
+
+<section *ngIf="!loading && !error">
+  <div class="user-table" *ngIf="users.length; else emptyUsers">
+    <div class="user-table__head">
+      <span>ID</span>
+      <span>Ad Soyad</span>
+      <span>E-posta</span>
+      <span>Rol</span>
+      <span>Islem</span>
+    </div>
+
+    <div class="user-table__row" *ngFor="let user of users">
+      <span>#{{ user.id }}</span>
+      <span>{{ user.fullName }}</span>
+      <span>{{ user.email }}</span>
+      <span>
+        <select [(ngModel)]="pendingRoles[user.id]">
+          <option value="User">User</option>
+          <option value="Admin">Admin</option>
+          <option value="Seller">Seller</option>
+        </select>
+      </span>
+      <span class="action-cell">
+        <button
+          class="primary-btn"
+          (click)="updateRole(user)"
+          [disabled]="saving[user.id]"
+        >
+          {{ saving[user.id] ? 'Kaydediliyor...' : 'Rol guncelle' }}
+        </button>
+        <button
+          class="danger-btn"
+          (click)="deleteUser(user)"
+          [disabled]="deleting[user.id]"
+        >
+          {{ deleting[user.id] ? 'Siliniyor...' : 'Sil' }}
+        </button>
+      </span>
+    </div>
+  </div>
+
+  <ng-template #emptyUsers>
+    <div class="state-panel empty">
+      <p class="muted-text">Kayitli uye bulunamadi.</p>
+    </div>
+  </ng-template>
+</section>

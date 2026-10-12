@@ -1,0 +1,45 @@
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Siparisler</p>
+    <h1>Siparislerim</h1>
+    <p class="muted-text">Satın aldıgın urunlerin durumunu takip et.</p>
+    <p class="muted-text" *ngIf="!loading">Toplam siparis: {{ orders.length }}</p>
+  </div>
+  <a routerLink="/" class="ghost-btn">Ana sayfa</a>
+</section>
+
+<section class="state-panel loading" *ngIf="loading && !orders.length">
+  <div class="spinner" aria-hidden="true"></div>
+  <p>Siparisler yukleniyor...</p>
+</section>
+
+<section class="state-panel error" *ngIf="error && !orders.length">
+  <div>
+    <h3>Liste alinamadi</h3>
+    <p>{{ error }}</p>
+  </div>
+  <button class="ghost-btn" (click)="loadOrders()">Tekrar dene</button>
+</section>
+
+<section *ngIf="!error || orders.length">
+  <div class="orders-list" *ngIf="orders.length; else emptyOrders">
+    <div class="order-card" *ngFor="let order of orders">
+      <div>
+        <p class="muted-text">Siparis #{{ order.id }}</p>
+        <h3>{{ order.productName }}</h3>
+        <p class="muted-text">Fiyat: {{ order.unitPrice | currency:'TRY':'symbol':'1.2-2':'tr' }}</p>
+        <p class="muted-text">Tarih: {{ order.createdAt | date:'short' }}</p>
+      </div>
+      <div class="order-status">
+        <span class="status-label">{{ order.statusDescription }}</span>
+        <span class="status-code">{{ order.statusCode }}</span>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyOrders>
+    <div class="state-panel empty" *ngIf="!loading">
+      <p class="muted-text">Henüz siparis bulunmuyor.</p>
+    </div>
+  </ng-template>
+</section>

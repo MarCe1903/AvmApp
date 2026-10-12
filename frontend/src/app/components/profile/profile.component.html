@@ -1,0 +1,71 @@
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Profil</p>
+    <h1>Hesap ayarlari</h1>
+    <p class="muted-text">Isim, iletisim ve sifre ayarlarini yonetin.</p>
+  </div>
+  <a routerLink="/" class="ghost-btn">Ana sayfa</a>
+</section>
+
+<section class="card">
+  <h3>Hesap bilgisi</h3>
+  <div class="form-grid">
+    <label>
+      <span>Ad Soyad</span>
+      <input type="text" [value]="session?.fullName" placeholder="Ad Soyad" disabled>
+    </label>
+    <label>
+      <span>E-posta</span>
+      <input type="email" [value]="session?.email" placeholder="E-posta" disabled>
+    </label>
+    <label>
+      <span>Rol</span>
+      <input type="text" [value]="session?.role" placeholder="Rol" disabled>
+    </label>
+  </div>
+  <p class="muted-text">Bu alanlar sadece goruntuleme icindir.</p>
+</section>
+
+<section class="card security-card">
+  <div class="security-header">
+    <div>
+      <h3>Iki adimli dogrulama</h3>
+      <p class="muted-text">Giris sirasinda sifrenize ek olarak mailinize gonderilen tek kullanimlik kodu ister.</p>
+    </div>
+    <span class="status-pill" [class.active]="mfaEnabled">
+      {{ mfaEnabled ? 'Aktif' : 'Pasif' }}
+    </span>
+  </div>
+
+  <div class="security-actions">
+    <button class="primary-btn" type="button" (click)="toggleMfa()" [disabled]="savingMfa">
+      {{ savingMfa ? 'Guncelleniyor...' : (mfaEnabled ? 'MFA kapat' : 'MFA aktif et') }}
+    </button>
+  </div>
+
+  <p class="error-text" *ngIf="mfaError">{{ mfaError }}</p>
+  <p class="success-text" *ngIf="mfaSuccess">{{ mfaSuccess }}</p>
+</section>
+
+<section class="card">
+  <h3>Sifre</h3>
+  <div class="form-grid">
+    <label>
+      <span>Mevcut sifre</span>
+      <input type="password" [(ngModel)]="currentPassword" placeholder="Mevcut sifre">
+    </label>
+    <label>
+      <span>Yeni sifre</span>
+      <input type="password" [(ngModel)]="newPassword" placeholder="Yeni sifre">
+    </label>
+    <label>
+      <span>Yeni sifre (tekrar)</span>
+      <input type="password" [(ngModel)]="confirmPassword" placeholder="Yeni sifre (tekrar)">
+    </label>
+  </div>
+  <button class="primary-btn" type="button" (click)="updatePassword()" [disabled]="savingPassword">
+    {{ savingPassword ? 'Guncelleniyor...' : 'Sifreyi guncelle' }}
+  </button>
+  <p class="error-text" *ngIf="passwordError">{{ passwordError }}</p>
+  <p class="success-text" *ngIf="passwordSuccess">{{ passwordSuccess }}</p>
+</section>

@@ -1,0 +1,173 @@
+<div class="auth-shell">
+  <div class="auth-shell__hero">
+    <a routerLink="/" class="brand-link">AVM App</a>
+    <p class="eyebrow">Hesap merkezi</p>
+    <h1 *ngIf="!awaitingMfa">Hesabina temiz bir akista giris yap.</h1>
+    <h1 *ngIf="awaitingMfa">Son bir adim kaldi.</h1>
+    <p class="hero-copy" *ngIf="!awaitingMfa">
+      Ana sayfadan ayrilmadan popup kovalamak yerine giris ve kayit islemlerini tek ekranda yonet.
+    </p>
+    <p class="hero-copy" *ngIf="awaitingMfa">
+      {{ pendingMfaEmail }} adresine gonderilen kodu gir, oturumun tamamlaninca seni tekrar uygulamaya alalim.
+    </p>
+    <div class="hero-badges" *ngIf="!awaitingMfa">
+      <span>Guvenli oturum</span>
+      <span>Mail MFA destegi</span>
+      <span>Hizli kayit</span>
+    </div>
+  </div>
+
+  <section class="auth-card">
+    <ng-container *ngIf="!awaitingMfa; else mfaStep">
+      <div class="auth-card__tabs">
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeTab === 'login'"
+          (click)="selectTab('login')"
+        >
+          Giris yap
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeTab === 'register'"
+          (click)="selectTab('register')"
+        >
+          Kayit ol
+        </button>
+      </div>
+
+      <form class="auth-form" *ngIf="activeTab === 'login'" (ngSubmit)="submitLogin()">
+        <label for="login-email">E-posta adresi</label>
+        <input
+          id="login-email"
+          name="login-email"
+          type="email"
+          [(ngModel)]="loginEmail"
+          placeholder="user@example.com"
+          required
+        />
+
+        <label for="login-password">Sifre</label>
+        <input
+          id="login-password"
+          name="login-password"
+          type="password"
+          [(ngModel)]="loginPassword"
+          placeholder="********"
+          required
+        />
+
+        <div class="form-meta">
+          <span>Mail ve sifre ile hizli giris</span>
+          <a href="#" (click)="$event.preventDefault()">Sifremi unuttum</a>
+        </div>
+
+        <button class="primary-btn full" type="submit" [disabled]="loginLoading">
+          <span *ngIf="!loginLoading">Giris yap</span>
+          <span *ngIf="loginLoading" class="spinner-lite" aria-hidden="true"></span>
+        </button>
+
+        <p class="feedback error" *ngIf="loginError">{{ loginError }}</p>
+      </form>
+
+      <form class="auth-form" *ngIf="activeTab === 'register'" (ngSubmit)="submitRegister()">
+        <label for="register-name">Ad soyad</label>
+        <input
+          id="register-name"
+          name="register-name"
+          type="text"
+          [(ngModel)]="registerName"
+          placeholder="Ad Soyad"
+          required
+        />
+
+        <label for="register-email">E-posta adresi</label>
+        <input
+          id="register-email"
+          name="register-email"
+          type="email"
+          [(ngModel)]="registerEmail"
+          placeholder="user@example.com"
+          required
+        />
+
+        <label for="register-password">Sifre</label>
+        <input
+          id="register-password"
+          name="register-password"
+          type="password"
+          [(ngModel)]="registerPassword"
+          placeholder="En az 8 karakter"
+          required
+        />
+
+        <p class="form-note">Kayit oldugunda oturumun acilir; MFA kullanmak istersen profil ekranindan aktif edebilirsin.</p>
+
+        <button class="primary-btn full" type="submit" [disabled]="registerLoading">
+          <span *ngIf="!registerLoading">Kayit ol</span>
+          <span *ngIf="registerLoading" class="spinner-lite" aria-hidden="true"></span>
+        </button>
+
+        <p class="feedback error" *ngIf="registerError">{{ registerError }}</p>
+      </form>
+
+      <div class="social-divider">veya</div>
+      <div class="social-auth">
+        <button
+          type="button"
+          class="social-btn google"
+          aria-label="Google ile giris yap"
+          (click)="openSocialAuth('google')"
+        >
+          Google ile devam et
+        </button>
+        <button
+          type="button"
+          class="social-btn muted"
+          aria-label="Facebook ile giris yap"
+          (click)="openSocialAuth('facebook')"
+        >
+          Facebook yakinda
+        </button>
+      </div>
+    </ng-container>
+
+    <ng-template #mfaStep>
+      <div class="mfa-state">
+        <p class="eyebrow">Iki adimli dogrulama</p>
+        <h2>Mail kodunu gir</h2>
+        <p class="mfa-copy">
+          Kod yalnizca bu giris denemesi icin gecerlidir ve 5 dakika icinde kullanilmalidir.
+        </p>
+
+        <form class="auth-form" (ngSubmit)="submitMfa()">
+          <label for="mfa-code">Dogrulama kodu</label>
+          <input
+            id="mfa-code"
+            name="mfa-code"
+            type="text"
+            maxlength="6"
+            class="mfa-input"
+            [(ngModel)]="mfaCode"
+            placeholder="123456"
+            autocomplete="one-time-code"
+            required
+          />
+
+          <button class="primary-btn full" type="submit" [disabled]="mfaLoading">
+            <span *ngIf="!mfaLoading">Kodu dogrula</span>
+            <span *ngIf="mfaLoading" class="spinner-lite" aria-hidden="true"></span>
+          </button>
+
+          <button class="ghost-btn full" type="button" (click)="backToLogin()" [disabled]="mfaLoading">
+            Giris ekranina don
+          </button>
+
+          <p class="feedback error" *ngIf="mfaError">{{ mfaError }}</p>
+        </form>
+      </div>
+    </ng-template>
+  </section>
+</div>

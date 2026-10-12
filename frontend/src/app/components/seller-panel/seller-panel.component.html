@@ -1,0 +1,91 @@
+﻿<section class="page-header">
+  <div>
+    <p class="eyebrow">Satici</p>
+    <h1>Urun yonetimi</h1>
+    <p class="muted-text">Urun ekleyin, stok ve fiyat bilgilerini belirleyin.</p>
+  </div>
+  <a routerLink="/" class="ghost-btn">Ana sayfa</a>
+</section>
+
+<section class="card">
+  <h3>Yeni urun ekle</h3>
+  <div class="form-grid">
+    <label>
+      <span>Urun adi</span>
+      <input type="text" [(ngModel)]="newProduct.productName" placeholder="Urun adi">
+    </label>
+    <label>
+      <span>Kategori ID</span>
+      <input type="number" [(ngModel)]="newProduct.categoryId" min="1">
+    </label>
+    <label>
+      <span>Birim</span>
+      <input type="text" [(ngModel)]="newProduct.quantityPerUnit" placeholder="1 kutu / 500 gr">
+    </label>
+    <label>
+      <span>Fiyat</span>
+      <input type="number" [(ngModel)]="newProduct.unitPrice" min="0" step="0.01">
+    </label>
+    <label>
+      <span>Stok</span>
+      <input type="number" [(ngModel)]="newProduct.unitsInStock" min="0">
+    </label>
+  </div>
+  <button class="primary-btn" type="button" (click)="addProduct()" [disabled]="saving">
+    {{ saving ? 'Ekleniyor...' : 'Urun ekle' }}
+  </button>
+  <p class="success-text" *ngIf="success">{{ success }}</p>
+  <p class="error-text" *ngIf="formError">{{ formError }}</p>
+</section>
+
+<section class="card">
+  <div class="card-header">
+    <h3>Urun listesi</h3>
+    <button class="ghost-btn" (click)="loadProducts()" [disabled]="loading">Yenile</button>
+  </div>
+
+  <div class="state-panel loading" *ngIf="loading">
+    <div class="spinner" aria-hidden="true"></div>
+    <p>Urunler yukleniyor...</p>
+  </div>
+
+  <div class="state-panel error" *ngIf="!loading && listError">
+    <div>
+      <h3>Liste alinamadi</h3>
+      <p>{{ listError }}</p>
+    </div>
+    <button class="ghost-btn" (click)="loadProducts()">Tekrar dene</button>
+  </div>
+
+  <div class="products-list" *ngIf="!loading && !listError">
+    <div class="product-row" *ngFor="let product of products">
+      <div>
+        <strong>{{ product.productName }}</strong>
+        <p class="muted-text">ID: {{ product.productId }} · Kategori: {{ product.categoryId }}</p>
+      </div>
+      <div class="product-meta">
+        <span>{{ product.unitPrice | currency:'TRY':'symbol':'1.2-2':'tr' }}</span>
+        <span>Stok: {{ product.unitsInStock }}</span>
+        <div class="product-actions">
+          <button
+            class="ghost-btn small"
+            type="button"
+            (click)="addStock(product)"
+            [disabled]="updating[product.productId]"
+          >
+            {{ updating[product.productId] ? 'Ekleniyor...' : 'Stok ekle' }}
+          </button>
+          <button
+            class="danger-btn small"
+            type="button"
+            (click)="deleteProduct(product)"
+            [disabled]="deleting[product.productId]"
+          >
+            {{ deleting[product.productId] ? 'Siliniyor...' : 'Urunu kaldir' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+

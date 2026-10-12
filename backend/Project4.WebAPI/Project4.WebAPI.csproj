@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+      <UserSecretsId>cc7a70c5-b3a7-46b7-b187-36cc31e1a49c</UserSecretsId>
+  </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+          <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.15.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Project4.Business\Project4.Business.csproj" />
+      <ProjectReference Include="..\Project4.ConsoleUI\Project4.ConsoleUI.csproj" />
+      <ProjectReference Include="..\Project4.DataAccess\Project4.DataAccess.csproj" />
+      <ProjectReference Include="..\Project4.Entities\Project4.Entities.csproj" />
+    </ItemGroup>
+
+</Project>

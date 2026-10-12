@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch WebAPI",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/Project4.WebAPI/bin/Debug/net9.0/Project4.WebAPI.dll",
+      "cwd": "${workspaceFolder}/backend/Project4.WebAPI",
+      "preLaunchTask": "build-webapi"
+    }
+  ]
+}

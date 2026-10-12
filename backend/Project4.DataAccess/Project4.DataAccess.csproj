@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Core\Core.csproj" />
+      <ProjectReference Include="..\Project4.Entities\Project4.Entities.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
+      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.15.0" />
+    </ItemGroup>
+
+</Project>

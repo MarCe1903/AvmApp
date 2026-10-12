@@ -1,0 +1,404 @@
+<div class="product-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Mağaza paneli</p>
+      <h1>Ürün kataloğu</h1>
+      <p class="subtitle">
+        API'den gelen canlı veriyi inceleyin, filtreleyin ve stok sağlığını bir bakışta görün.
+      </p>
+    </div>
+    <div class="header-actions">
+      <div class="header-tools">
+        <button class="ghost-btn" (click)="refresh()">Veriyi yenile</button>
+        <span class="timestamp" *ngIf="lastUpdated">
+          Son güncelleme {{ lastUpdated | date:'shortTime' }}
+        </span>
+        <div class="cart-entry" [class.open]="showCartPanel">
+          <button class="cart-btn" (click)="toggleCartPanel()">
+            Sepetim
+            <span
+              class="cart-count"
+              [class.cart-count--hidden]="!cartCount"
+              [attr.aria-hidden]="!cartCount"
+            >
+              {{ cartCount || 0 }}
+            </span>
+          </button>
+          <div class="cart-popover" *ngIf="showCartPanel">
+            <div class="cart-popover__header">
+              <h3>Sepet özeti</h3>
+              <button class="close-btn" (click)="toggleCartPanel()" aria-label="Sepeti kapat">
+                ×
+              </button>
+            </div>
+            <div *ngIf="cartItems.length; else emptyCart" class="cart-list">
+              <div class="cart-item" *ngFor="let item of cartItems">
+                <div>
+                  <p class="cart-item__name">{{ item.product.productName }}</p>
+                  <p class="muted-text">Adet: {{ item.quantity }}</p>
+                </div>
+                <button
+                  class="ghost-btn tiny"
+                  type="button"
+                  (click)="removeFromCart(item.product.productId, $event)"
+                >
+                  Kaldır
+                </button>
+              </div>
+            </div>
+            <ng-template #emptyCart>
+              <p class="muted-text empty">Sepetinizde ürün yok.</p>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+      <div class="auth-actions">
+        <ng-container *ngIf="!isAuthenticated; else loggedInActions">
+          <a
+            class="login-btn"
+            routerLink="/auth"
+            [queryParams]="{ tab: 'login', returnUrl: '/' }"
+          >
+            Giris yap
+          </a>
+          <a
+            class="login-btn secondary"
+            routerLink="/auth"
+            [queryParams]="{ tab: 'register', returnUrl: '/' }"
+          >
+            Kayit ol
+          </a>
+        </ng-container>
+
+        <ng-template #loggedInActions>
+          <div class="user-summary">
+            <div class="user-chip">
+              <div class="avatar">{{ userInitials || 'AD' }}</div>
+              <div>
+                <p class="eyebrow small">{{ isAdminUser ? 'Yonetici' : 'Uye' }}</p>
+                <h4 class="user-name">{{ currentUserName }}</h4>
+                <p class="muted-text">{{ currentUserRole }}</p>
+              </div>
+            </div>
+            <div class="user-summary__actions">
+              <button class="ghost-btn" type="button" (click)="logout()">Cikis yap</button>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+  </header>
+
+
+  <div class="favorite-toast" *ngIf="favoriteMessage">
+    {{ favoriteMessage }}
+  </div>
+
+  <section class="stat-grid">
+    <article class="stat-card">
+      <p class="stat-label">Toplam ürün</p>
+      <p class="stat-value">{{ products.length }}</p>
+      <span class="stat-helper">API'den dönen kayıt</span>
+    </article>
+    <article class="stat-card">
+      <p class="stat-label">Filtrelenen ürün</p>
+      <p class="stat-value">{{ filteredProducts.length }}</p>
+      <span class="stat-helper">Şu an listelenen</span>
+    </article>
+    <article class="stat-card">
+      <p class="stat-label">Ortalama fiyat</p>
+      <p class="stat-value">
+        {{ averagePrice | currency:'TRY':'symbol':'1.2-2':'tr' }}
+      </p>
+      <span class="stat-helper">Listeye göre</span>
+    </article>
+    <article class="stat-card">
+      <p class="stat-label">Toplam stok</p>
+      <p class="stat-value">{{ totalStock }}</p>
+      <span class="stat-helper">Filtrelenmiş ürünler</span>
+    </article>
+  </section>
+
+  <section class="account-actions" *ngIf="isAuthenticated">
+    <div class="account-card">
+      <div>
+        <p class="eyebrow small">{{ isAdminUser ? 'Yönetici' : 'Üye' }}</p>
+        <h3>{{ currentUserName }}</h3>
+        <p class="muted-text">Profil ve güvenlik ayarlarını buradan yönetebilirsiniz.</p>
+      </div>
+      <a routerLink="/profile" class="primary-btn">Profil ayarları</a>
+    </div>
+
+    <div class="account-card" *ngIf="isAdminUser">
+      <div>
+        <p class="eyebrow small">Yönetim</p>
+        <h3>Üye paneli</h3>
+        <p class="muted-text">Üyeleri görüntüleyin ve rollerini yönetin.</p>
+      </div>
+      <a routerLink="/admin" class="ghost-btn">Admin paneli</a>
+    </div>
+  </section>
+
+  <section class="favorites-panel" *ngIf="isAuthenticated">
+    <div class="favorites-header">
+      <div>
+        <p class="eyebrow small">Favoriler</p>
+        <h3>Favori urunler</h3>
+        <p class="muted-text">Hesabina ekledigin urunler burada listelenir.</p>
+      </div>
+      <button class="ghost-btn" type="button" (click)="loadFavorites()" [disabled]="favoritesLoading">
+        Yenile
+      </button>
+    </div>
+
+    <div class="state-panel loading" *ngIf="favoritesLoading">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Favoriler yukleniyor...</p>
+    </div>
+
+    <div class="state-panel error" *ngIf="!favoritesLoading && favoritesError">
+      <div>
+        <h3>Favoriler alinamadi</h3>
+        <p>{{ favoritesError }}</p>
+      </div>
+      <button class="ghost-btn" (click)="loadFavorites()">Tekrar dene</button>
+    </div>
+
+    <div class="favorites-list" *ngIf="!favoritesLoading && !favoritesError">
+      <div *ngIf="favoriteProducts.length; else emptyFavorites">
+        <div class="favorites-item" *ngFor="let product of favoriteProducts">
+          <div class="favorites-meta">
+            <strong>{{ product.productName }}</strong>
+            <span class="muted-text">#{{ product.productId }}</span>
+          </div>
+          <div class="favorites-actions">
+            <span class="price">{{ product.unitPrice | currency:'TRY':'symbol':'1.2-2':'tr' }}</span>
+            <button class="ghost-btn small" (click)="toggleFavorite(product, $event)">
+              Favorilerden cikar
+            </button>
+          </div>
+        </div>
+      </div>
+      <ng-template #emptyFavorites>
+        <div class="state-panel empty">
+          <p class="muted-text">Favori urun bulunamadi.</p>
+        </div>
+      </ng-template>
+    </div>
+  </section>
+
+  <section class="filters">
+    <div class="input-group">
+      <label for="search">Arama</label>
+      <input
+        id="search"
+        type="text"
+        placeholder="Ürün adı veya kategori ara"
+        #searchInput
+        [value]="searchTerm"
+        (input)="onSearch(searchInput.value)"
+      />
+    </div>
+
+    <div class="input-group">
+      <label for="category">Kategori</label>
+      <select
+        id="category"
+        #categorySelect
+        [value]="selectedCategory"
+        (change)="onCategoryChange(categorySelect.value)"
+      >
+        <option value="all">Tümü</option>
+        <option *ngFor="let category of categories" [value]="category">
+          {{ category }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-actions">
+      <button class="ghost-btn" (click)="clearFilters()" [disabled]="!canClearFilters()">
+        Filtreyi temizle
+      </button>
+      <button class="primary-btn" (click)="refresh()">Yeniden yükle</button>
+    </div>
+  </section>
+
+  <section class="state-panel loading" *ngIf="loading">
+    <div class="spinner" aria-hidden="true"></div>
+    <p>Ürünler yükleniyor...</p>
+  </section>
+
+  <section class="state-panel error" *ngIf="!loading && error">
+    <div>
+      <h3>Bir şeyler ters gitti</h3>
+      <p>{{ error }}</p>
+    </div>
+    <button class="primary-btn" (click)="refresh()">Tekrar dene</button>
+  </section>
+
+  <section
+    class="state-panel empty"
+    *ngIf="!loading && !error && !filteredProducts.length"
+  >
+    <div>
+      <h3>Gösterilecek ürün yok</h3>
+      <p>Filtreleri temizleyebilir veya veriyi yeniden çekebilirsiniz.</p>
+    </div>
+    <div class="filter-actions compact">
+      <button class="ghost-btn" (click)="clearFilters()" [disabled]="!canClearFilters()">
+        Filtreyi temizle
+      </button>
+      <button class="primary-btn" (click)="refresh()">Veriyi yenile</button>
+    </div>
+  </section>
+
+  <section class="product-grid" *ngIf="!loading && !error && filteredProducts.length">
+    <article
+      class="product-card"
+      [class.expanded]="expandedProductId === product.productId"
+      *ngFor="let product of filteredProducts; trackBy: trackByProductId"
+      (click)="toggleProductDetails(product.productId)"
+    >
+      <div class="product-card__header">
+        <div>
+          <h3>{{ product.productName }}</h3>
+          <p class="muted-text">#{{ product.productId }}</p>
+        </div>
+        <span class="badge">{{ product.categoryName }}</span>
+      </div>
+      <div class="product-card__body">
+        <div>
+          <p class="muted-text">Fiyat</p>
+          <p class="price">
+            {{ product.unitPrice | currency:'TRY':'symbol':'1.2-2':'tr' }}
+          </p>
+        </div>
+        <div>
+          <p class="muted-text">Stok</p>
+          <p class="stock" [class.low]="product.unitsInStock < 10">
+            {{ product.unitsInStock }}
+          </p>
+        </div>
+      </div>
+      <div class="stock-bar">
+        <div
+          class="stock-bar__value"
+          [style.width.%]="getStockBarWidth(product.unitsInStock)"
+        ></div>
+      </div>
+      <div
+        class="product-card__actions"
+        *ngIf="expandedProductId === product.productId"
+      >
+        <p class="muted-text">Hızlı işlemler</p>
+        <div class="action-buttons">
+          <button
+            type="button"
+            class="primary-btn small"
+            (click)="addToCart(product, $event)"
+            *ngIf="!isOutOfStock(product)"
+          >
+            Sepete ekle
+          </button>
+          <button
+            type="button"
+            class="primary-btn small"
+            (click)="purchaseProduct(product, $event)"
+            *ngIf="!isOutOfStock(product)"
+          >
+            Satın al
+          </button>
+          <span class="stock-out" *ngIf="isOutOfStock(product)">Stokta kalmadı</span>
+          <button
+            type="button"
+            class="ghost-btn small"
+            (click)="toggleFavorite(product, $event)"
+          >
+            {{ isFavorited(product) ? 'Favorilerden cikar' : 'Favoriye ekle' }}
+          </button>
+        </div>
+        <p class="muted-text footnote">
+          Eklenen ürünleri sağ üstteki sepetten görüntüleyebilirsiniz.
+        </p>
+      </div>
+      <p class="muted-text footnote">
+        Kategori: {{ product.categoryName }} • Fiyat: {{ product.unitPrice | number:'1.2-2':'tr' }} ₺
+      </p>
+    </article>
+  </section>
+
+    <div class="chat-widget" [class.open]="showChatPanel">
+    <button class="chat-toggle" (click)="toggleChatPanel()">
+      <span *ngIf="!showChatPanel">{{ isSellerUser ? 'Musteri sohbetleri' : 'Canli destek' }}</span>
+      <span *ngIf="showChatPanel">Kapat</span>
+    </button>
+    <div class="chat-panel" *ngIf="showChatPanel">
+      <div class="chat-header">
+        <div>
+          <p class="eyebrow small">Canli destek</p>
+          <h3>{{ isSellerUser ? 'Musteri sohbetleri' : 'Musteri hizmetleri' }}</h3>
+        </div>
+        <div class="chat-header__actions">
+          <button class="ghost-btn small" type="button" (click)="refreshChat()" [disabled]="chatLoading">Yenile</button>
+          <button class="ghost-btn small" type="button" (click)="closeChat()" [disabled]="!activeChatSessionId">Sohbeti bitir</button>
+        </div>
+      </div>
+
+      <div class="chat-sessions" *ngIf="isSellerUser">
+        <p class="muted-text" *ngIf="!chatSessions.length">Acilmis sohbet yok.</p>
+        <button
+          class="chat-session"
+          type="button"
+          *ngFor="let session of chatSessions"
+          [class.active]="session.id === activeChatSessionId"
+          (click)="selectChatSession(session.id)"
+        >
+          <div>
+            <strong>{{ session.fullName }}</strong>
+            <span class="muted-text">{{ session.email }}</span>
+          </div>
+          <span class="muted-text">{{ session.lastMessageAt | date:'shortTime' }}</span>
+        </button>
+      </div>
+
+      <div class="state-panel loading" *ngIf="chatLoading">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Mesajlar yukleniyor...</p>
+      </div>
+
+      <div class="state-panel error" *ngIf="!chatLoading && chatError">
+        <div>
+          <h3>Chat hatasi</h3>
+          <p>{{ chatError }}</p>
+        </div>
+      </div>
+
+      <div class="chat-messages" *ngIf="!chatLoading && !chatError">
+        <p class="muted-text" *ngIf="!activeChatSessionId">Sohbet secin ya da baslatin.</p>
+        <div
+          class="chat-message"
+          *ngFor="let message of chatMessages"
+          [class.chat-message--seller]="message.senderRole === 'Seller'"
+        >
+          <p class="chat-message__author">
+            {{ message.senderRole === 'Seller' ? 'Satici' : 'Musteri' }}
+            <span class="chat-message__time">{{ message.sentAt | date:'shortTime' }}</span>
+          </p>
+          <p class="chat-message__text">{{ message.text }}</p>
+        </div>
+      </div>
+      <form class="chat-form" (ngSubmit)="sendChatMessage()" *ngIf="activeChatSessionId">
+        <input
+          type="text"
+          placeholder="Mesajinizi yazin..."
+          [(ngModel)]="newChatMessage"
+          name="chat-message"
+          (keydown.enter)="$event.preventDefault(); sendChatMessage()"
+        />
+        <button class="primary-btn" type="submit" [disabled]="!newChatMessage.trim() || chatSending">
+          Gonder
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
